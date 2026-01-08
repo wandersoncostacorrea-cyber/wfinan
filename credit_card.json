@@ -1,0 +1,26 @@
+[
+    {
+        "active": 1,
+        "closing_day": 12,
+        "color": "#8b5cf6",
+        "created_at": "2026-01-07 18:38:53.680797",
+        "due_day": 19,
+        "icon": "credit-card",
+        "id": 1,
+        "limit": 13750.0,
+        "name": "Nubank Fisico",
+        "user_id": 1
+    },
+    {
+        "active": 1,
+        "closing_day": 26,
+        "color": "#8b5cf6",
+        "created_at": "2026-01-08 12:25:26.508280",
+        "due_day": 9,
+        "icon": "credit-card",
+        "id": 2,
+        "limit": 15534.0,
+        "name": "BB Private Label Visa Internacioal",
+        "user_id": 1
+    }
+]

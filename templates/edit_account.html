@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Conta - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Editar Conta</h1>
+    <p class="text-gray-600">Modifique os dados da conta</p>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-white rounded-xl shadow-md p-8">
+        <form method="POST" action="{{ url_for('edit_account', id=account.id) }}">
+            <div class="mb-6">
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nome da Conta <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="name" name="name" required value="{{ account.name }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+
+            <div class="mb-6">
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Conta <span class="text-red-500">*</span>
+                </label>
+                <select id="type" name="type" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="checking" {% if account.type == 'checking' %}selected{% endif %}>Conta Corrente</option>
+                    <option value="savings" {% if account.type == 'savings' %}selected{% endif %}>Poupança</option>
+                    <option value="investment" {% if account.type == 'investment' %}selected{% endif %}>Investimento</option>
+                    <option value="cash" {% if account.type == 'cash' %}selected{% endif %}>Dinheiro</option>
+                    <option value="other" {% if account.type == 'other' %}selected{% endif %}>Outro</option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label for="color" class="block text-sm font-medium text-gray-700 mb-2">
+                    Cor
+                </label>
+                <input type="color" id="color" name="color" value="{{ account.color }}"
+                       class="w-20 h-10 border border-gray-300 rounded-lg cursor-pointer">
+            </div>
+
+            <div class="mb-6">
+                <label for="icon" class="block text-sm font-medium text-gray-700 mb-2">
+                    Ícone
+                </label>
+                <select id="icon" name="icon"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="university" {% if account.icon == 'university' %}selected{% endif %}>🏦 Banco</option>
+                    <option value="wallet" {% if account.icon == 'wallet' %}selected{% endif %}>👛 Carteira</option>
+                    <option value="credit-card" {% if account.icon == 'credit-card' %}selected{% endif %}>💳 Cartão</option>
+                    <option value="money-bill" {% if account.icon == 'money-bill' %}selected{% endif %}>💵 Dinheiro</option>
+                    <option value="piggy-bank" {% if account.icon == 'piggy-bank' %}selected{% endif %}>🐷 Cofrinho</option>
+                    <option value="chart-line" {% if account.icon == 'chart-line' %}selected{% endif %}>📈 Investimento</option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" name="active" {% if account.active %}checked{% endif %}
+                           class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                    <span class="ml-2 text-sm text-gray-700">Conta Ativa</span>
+                </label>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-gray-700"><strong>Saldo Inicial:</strong> R$ {{ "%.2f"|format(account.initial_balance) }}</p>
+                <p class="text-sm text-gray-700 mt-1"><strong>Saldo Atual:</strong> R$ {{ "%.2f"|format(account.current_balance) }}</p>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" 
+                        class="flex-1 bg-primary hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Atualizar
+                </button>
+                <a href="{{ url_for('accounts') }}" 
+                   class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 rounded-lg transition text-center">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

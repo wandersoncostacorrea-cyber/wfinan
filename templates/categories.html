@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Categorias - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Categorias</h1>
+            <p class="text-gray-600">Organize suas transações</p>
+        </div>
+        <a href="{{ url_for('add_category') }}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition transform hover:scale-105">
+            <i class="fas fa-plus-circle mr-2"></i>
+            Nova Categoria
+        </a>
+    </div>
+</div>
+
+{% if categories %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Categorias de Receita -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-arrow-up text-green-600 mr-2"></i>
+            Receitas
+        </h2>
+        <div class="space-y-2">
+            {% for category in categories if category.type == 'income' %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3" style="background-color: {{ category.color }}20;">
+                        <i class="fas fa-{{ category.icon }}" style="color: {{ category.color }};"></i>
+                    </div>
+                    <span class="font-medium text-gray-800">{{ category.name }}</span>
+                </div>
+                <a href="{{ url_for('edit_category', id=category.id) }}" 
+                   class="text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Categorias de Despesa -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-arrow-down text-red-600 mr-2"></i>
+            Despesas
+        </h2>
+        <div class="space-y-2">
+            {% for category in categories if category.type == 'expense' %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3" style="background-color: {{ category.color }}20;">
+                        <i class="fas fa-{{ category.icon }}" style="color: {{ category.color }};"></i>
+                    </div>
+                    <span class="font-medium text-gray-800">{{ category.name }}</span>
+                </div>
+                <a href="{{ url_for('edit_category', id=category.id) }}" 
+                   class="text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-md p-16 text-center">
+    <i class="fas fa-tags text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-2xl font-bold text-gray-800 mb-2">Nenhuma categoria cadastrada</h3>
+    <p class="text-gray-600 mb-6">Adicione categorias para organizar suas transações</p>
+    <a href="{{ url_for('add_category') }}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg transition">
+        <i class="fas fa-plus-circle mr-2"></i>
+        Adicionar Primeira Categoria
+    </a>
+</div>
+{% endif %}
+{% endblock %}

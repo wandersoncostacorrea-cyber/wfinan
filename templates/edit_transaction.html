@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Transação - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Editar Transação</h1>
+    <p class="text-gray-600">Modifique os dados da transação</p>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-white rounded-xl shadow-md p-8">
+        <form method="POST" action="{{ url_for('edit_transaction', id=transaction.id) }}">
+            <!-- Tipo de Transação -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Transação</label>
+                <div class="flex gap-4">
+                    <label class="flex-1">
+                        <input type="radio" name="type" value="income" class="peer hidden" required {% if transaction.type == 'income' %}checked{% endif %}>
+                        <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer text-center peer-checked:border-green-500 peer-checked:bg-green-50 transition hover:border-green-400">
+                            <i class="fas fa-arrow-up text-3xl text-green-600 mb-2"></i>
+                            <p class="font-medium text-gray-700">Receita</p>
+                        </div>
+                    </label>
+                    <label class="flex-1">
+                        <input type="radio" name="type" value="expense" class="peer hidden" required {% if transaction.type == 'expense' %}checked{% endif %}>
+                        <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer text-center peer-checked:border-red-500 peer-checked:bg-red-50 transition hover:border-red-400">
+                            <i class="fas fa-arrow-down text-3xl text-red-600 mb-2"></i>
+                            <p class="font-medium text-gray-700">Despesa</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="mb-6">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Descrição <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="description" name="description" required value="{{ transaction.description }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+
+            <!-- Valor -->
+            <div class="mb-6">
+                <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                    Valor (R$) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0.01" required value="{{ transaction.amount }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+
+            <!-- Data -->
+            <div class="mb-6">
+                <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+                    Data <span class="text-red-500">*</span>
+                </label>
+                <input type="date" id="date" name="date" required value="{{ transaction.date.strftime('%Y-%m-%d') }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+
+            <!-- Conta -->
+            <div class="mb-6">
+                <label for="account_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Conta <span class="text-red-500">*</span>
+                </label>
+                <select id="account_id" name="account_id" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    {% for account in accounts %}
+                    <option value="{{ account.id }}" {% if account.id == transaction.account_id %}selected{% endif %}>
+                        {{ account.name }} (R$ {{ "%.2f"|format(account.current_balance) }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Categoria -->
+            <div class="mb-6">
+                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Categoria
+                </label>
+                <select id="category_id" name="category_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="">Sem categoria</option>
+                    <optgroup label="Receitas">
+                        {% for category in categories %}
+                        {% if category.type == 'income' %}
+                        <option value="{{ category.id }}" {% if transaction.category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Despesas">
+                        {% for category in categories %}
+                        {% if category.type == 'expense' %}
+                        <option value="{{ category.id }}" {% if transaction.category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Notas -->
+            <div class="mb-6">
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                    Observações
+                </label>
+                <textarea id="notes" name="notes" rows="3"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">{{ transaction.notes }}</textarea>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex gap-4">
+                <button type="submit" 
+                        class="flex-1 bg-primary hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Atualizar
+                </button>
+                <a href="{{ url_for('transactions') }}" 
+                   class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 rounded-lg transition text-center">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

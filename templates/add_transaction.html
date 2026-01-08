@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Transação - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Nova Transação</h1>
+    <p class="text-gray-600">Adicione uma receita ou despesa</p>
+</div>
+
+<div class="max-w-2xl">
+    <div class="bg-white rounded-xl shadow-md p-8">
+        <form method="POST" action="{{ url_for('add_transaction') }}" enctype="multipart/form-data" id="transactionForm">
+            <!-- Tipo de Transação -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Transação</label>
+                <div class="flex gap-4">
+                    <label class="flex-1">
+                        <input type="radio" name="type" value="income" class="peer hidden" required>
+                        <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer text-center peer-checked:border-green-500 peer-checked:bg-green-50 transition hover:border-green-400">
+                            <i class="fas fa-arrow-up text-3xl text-green-600 mb-2"></i>
+                            <p class="font-medium text-gray-700">Receita</p>
+                        </div>
+                    </label>
+                    <label class="flex-1">
+                        <input type="radio" name="type" value="expense" class="peer hidden" required checked>
+                        <div class="border-2 border-gray-300 rounded-lg p-4 cursor-pointer text-center peer-checked:border-red-500 peer-checked:bg-red-50 transition hover:border-red-400">
+                            <i class="fas fa-arrow-down text-3xl text-red-600 mb-2"></i>
+                            <p class="font-medium text-gray-700">Despesa</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="mb-6">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Descrição <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="description" name="description" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                       placeholder="Ex: Salário, Supermercado, Netflix...">
+            </div>
+
+            <!-- Valor -->
+            <div class="mb-6">
+                <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                    Valor (R$) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0.01" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                       placeholder="0,00">
+            </div>
+
+            <!-- Data -->
+            <div class="mb-6">
+                <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+                    Data <span class="text-red-500">*</span>
+                </label>
+                <input type="date" id="date" name="date" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+
+            <!-- Forma de Pagamento -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Forma de Pagamento <span class="text-red-500">*</span></label>
+                <div class="flex gap-4">
+                    <label class="flex-1">
+                        <input type="radio" name="payment_method" value="debit" class="peer hidden" required checked>
+                        <div class="border-2 border-gray-300 rounded-lg p-3 cursor-pointer text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 transition">
+                            <i class="fas fa-university text-2xl text-blue-600 mb-1"></i>
+                            <p class="font-medium text-gray-700 text-sm">Débito/Dinheiro</p>
+                        </div>
+                    </label>
+                    <label class="flex-1">
+                        <input type="radio" name="payment_method" value="credit" class="peer hidden" required>
+                        <div class="border-2 border-gray-300 rounded-lg p-3 cursor-pointer text-center peer-checked:border-purple-500 peer-checked:bg-purple-50 transition">
+                            <i class="fas fa-credit-card text-2xl text-purple-600 mb-1"></i>
+                            <p class="font-medium text-gray-700 text-sm">Crédito</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Conta (Débito) -->
+            <div class="mb-6" id="accountField">
+                <label for="account_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Conta <span class="text-red-500">*</span>
+                </label>
+                <select id="account_id" name="account_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="">Selecione uma conta</option>
+                    {% for account in accounts %}
+                    <option value="{{ account.id }}">{{ account.name }} (R$ {{ "%.2f"|format(account.current_balance) }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Cartão de Crédito -->
+            <div class="mb-6 hidden" id="creditCardField">
+                <label for="credit_card_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Cartão de Crédito <span class="text-red-500">*</span>
+                </label>
+                <select id="credit_card_id" name="credit_card_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="">Selecione um cartão</option>
+                    {% for card in credit_cards %}
+                    <option value="{{ card.id }}">{{ card.name }} (Limite: R$ {{ "%.2f"|format(card.limit) }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Categoria -->
+            <div class="mb-6">
+                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Categoria
+                </label>
+                <select id="category_id" name="category_id"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="">Sem categoria</option>
+                    <optgroup label="Receitas">
+                        {% for category in categories %}
+                        {% if category.type == 'income' %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Despesas">
+                        {% for category in categories %}
+                        {% if category.type == 'expense' %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Parcelar Compra -->
+            <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4" id="installmentSection">
+                <div class="flex items-center mb-3">
+                    <input type="checkbox" id="is_installment" name="is_installment" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                    <label for="is_installment" class="ml-2 text-sm font-medium text-gray-700">
+                        <i class="fas fa-calendar-alt mr-1"></i> Parcelar esta compra
+                    </label>
+                </div>
+                
+                <div id="installmentOptions" class="hidden">
+                    <label for="installments_count" class="block text-sm font-medium text-gray-700 mb-2">
+                        Número de Parcelas
+                    </label>
+                    <select id="installments_count" name="installments_count"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        {% for i in range(2, 25) %}
+                        <option value="{{ i }}">{{ i }}x sem juros</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-600 mt-2">
+                        <i class="fas fa-info-circle"></i> As parcelas serão criadas automaticamente
+                    </p>
+                </div>
+            </div>
+
+            <!-- Anexar Comprovante -->
+            <div class="mb-6">
+                <label for="attachment" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-paperclip mr-1"></i> Anexar Comprovante
+                </label>
+                <input type="file" id="attachment" name="attachment" accept="image/*,.pdf"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer">
+                <p class="text-xs text-gray-600 mt-1">Formatos aceitos: JPG, PNG, PDF (máx. 5MB)</p>
+            </div>
+
+            <!-- Notas -->
+            <div class="mb-6">
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                    Observações
+                </label>
+                <textarea id="notes" name="notes" rows="3"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                          placeholder="Adicione observações adicionais (opcional)"></textarea>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex gap-4">
+                <button type="submit" 
+                        class="flex-1 bg-primary hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Salvar Transação
+                </button>
+                <a href="{{ url_for('transactions') }}" 
+                   class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 rounded-lg transition text-center">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Definir data atual
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+
+    // Alternar entre conta e cartão de crédito
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const accountField = document.getElementById('accountField');
+    const creditCardField = document.getElementById('creditCardField');
+    const accountSelect = document.getElementById('account_id');
+    const creditCardSelect = document.getElementById('credit_card_id');
+    
+    paymentMethods.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'debit') {
+                accountField.classList.remove('hidden');
+                creditCardField.classList.add('hidden');
+                accountSelect.required = true;
+                creditCardSelect.required = false;
+            } else {
+                accountField.classList.add('hidden');
+                creditCardField.classList.remove('hidden');
+                accountSelect.required = false;
+                creditCardSelect.required = true;
+            }
+        });
+    });
+
+    // Mostrar/ocultar opções de parcelamento
+    const installmentCheckbox = document.getElementById('is_installment');
+    const installmentOptions = document.getElementById('installmentOptions');
+    const installmentSection = document.getElementById('installmentSection');
+    
+    installmentCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            installmentOptions.classList.remove('hidden');
+        } else {
+            installmentOptions.classList.add('hidden');
+        }
+    });
+
+    // Ocultar seção de parcelamento para receitas
+    const typeRadios = document.querySelectorAll('input[name="type"]');
+    typeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'income') {
+                installmentSection.classList.add('hidden');
+                installmentCheckbox.checked = false;
+                installmentOptions.classList.add('hidden');
+            } else {
+                installmentSection.classList.remove('hidden');
+            }
+        });
+    });
+</script>
+{% endblock %}

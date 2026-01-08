@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Cartões de Crédito - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Cartões de Crédito</h1>
+            <p class="text-gray-600">Gerencie seus cartões e faturas</p>
+        </div>
+        <a href="{{ url_for('add_credit_card') }}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition">
+            <i class="fas fa-plus-circle mr-2"></i>
+            Novo Cartão
+        </a>
+    </div>
+</div>
+
+{% if cards_data %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for data in cards_data %}
+    {% set card = data.card %}
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ card.color }};">
+        <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4" style="background-color: {{ card.color }}20;">
+                        <i class="fas fa-{{ card.icon }} text-2xl" style="color: {{ card.color }};"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">{{ card.name }}</h3>
+                        <p class="text-sm text-gray-500">Limite: R$ {{ "%.2f"|format(card.limit) }}</p>
+                    </div>
+                </div>
+                {% if not card.active %}
+                <span class="px-2 py-1 bg-gray-200 text-gray-600 rounded-full text-xs font-medium">Inativo</span>
+                {% endif %}
+            </div>
+            
+            <!-- Fatura Atual -->
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-1">Fatura Atual</p>
+                <p class="text-3xl font-bold text-red-600">R$ {{ "%.2f"|format(data.current_invoice) }}</p>
+            </div>
+            
+            <!-- Limite Disponível -->
+            <div class="mb-4">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Limite Disponível</span>
+                    <span class="font-medium">R$ {{ "%.2f"|format(data.available_limit) }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-green-500 to-red-500 h-2 rounded-full" 
+                         style="width: {{ data.usage_percent }}%"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">{{ "%.1f"|format(data.usage_percent) }}% utilizado</p>
+            </div>
+            
+            <div class="text-xs text-gray-600 mb-4">
+                <p>Fechamento: dia {{ card.closing_day }}</p>
+                <p>Vencimento: dia {{ card.due_day }}</p>
+            </div>
+            
+            <div class="flex gap-2 pt-4 border-t">
+                <a href="{{ url_for('credit_card_invoice', id=card.id) }}" 
+                   class="flex-1 text-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition font-medium text-sm">
+                    <i class="fas fa-file-invoice mr-1"></i>Ver Fatura
+                </a>
+                <a href="{{ url_for('edit_credit_card', id=card.id) }}" 
+                   class="flex-1 text-center px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition font-medium text-sm">
+                    <i class="fas fa-edit mr-1"></i>Editar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-md p-16 text-center">
+    <i class="fas fa-credit-card text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-2xl font-bold text-gray-800 mb-2">Nenhum cartão cadastrado</h3>
+    <p class="text-gray-600 mb-6">Adicione seus cartões de crédito para controlar suas faturas</p>
+    <a href="{{ url_for('add_credit_card') }}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg transition">
+        <i class="fas fa-plus-circle mr-2"></i>
+        Adicionar Primeiro Cartão
+    </a>
+</div>
+{% endif %}
+{% endblock %}

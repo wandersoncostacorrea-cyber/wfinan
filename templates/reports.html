@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Relatórios</h1>
+    <p class="text-gray-600">Análise detalhada das suas finanças</p>
+</div>
+
+<!-- Evolução Mensal -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-chart-line mr-2"></i>Evolução Mensal (Últimos 6 Meses)
+    </h2>
+    <canvas id="monthlyChart" class="max-h-80"></canvas>
+</div>
+
+<!-- Despesas por Categoria -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-chart-pie mr-2"></i>Despesas por Categoria (Ano Atual)
+    </h2>
+    
+    {% if category_data %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="space-y-3">
+            {% for cat in category_data %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center flex-1">
+                    <div class="w-4 h-4 rounded mr-3" style="background-color: {{ cat.color }};"></div>
+                    <span class="text-sm font-medium text-gray-800">{{ cat.name }}</span>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-gray-800">R$ {{ "%.2f"|format(cat.total) }}</p>
+                    <p class="text-xs text-gray-500">{{ "%.1f"|format(cat.percentage) }}%</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <p class="text-center text-gray-500 py-8">Nenhuma despesa registrada este ano</p>
+    {% endif %}
+</div>
+
+<!-- Comprometimento Futuro -->
+<div class="bg-white rounded-xl shadow-md p-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-calendar-check mr-2"></i>Comprometimento Futuro (Parcelas Pendentes)
+    </h2>
+    
+    {% if future_months %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for month_data in future_months %}
+        <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-primary transition">
+            <p class="text-sm text-gray-600 mb-1">{{ month_data.month }}</p>
+            <p class="text-2xl font-bold text-orange-600">R$ {{ "%.2f"|format(month_data.amount) }}</p>
+            <p class="text-xs text-gray-500 mt-1">em parcelas</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p class="text-sm text-gray-700">
+            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+            Este é o valor que você já comprometeu para os próximos meses com compras parceladas.
+        </p>
+    </div>
+    {% else %}
+    <p class="text-center text-gray-500 py-8">Nenhum comprometimento futuro</p>
+    {% endif %}
+</div>
+
+<script>
+    // Gráfico de Evolução Mensal
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for month in months_data %}
+                    '{{ month.month }}',
+                {% endfor %}
+            ],
+            datasets: [
+                {
+                    label: 'Receitas',
+                    data: [
+                        {% for month in months_data %}
+                            {{ month.income }},
+                        {% endfor %}
+                    ],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Despesas',
+                    data: [
+                        {% for month in months_data %}
+                            {{ month.expense }},
+                        {% endfor %}
+                    ],
+                    borderColor: '#EF4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Saldo',
+                    data: [
+                        {% for month in months_data %}
+                            {{ month.balance }},
+                        {% endfor %}
+                    ],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': R$ ' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    {% if category_data %}
+    // Gráfico de Categorias
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for cat in category_data %}
+                    '{{ cat.name }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for cat in category_data %}
+                        {{ cat.total }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    {% for cat in category_data %}
+                        '{{ cat.color }}',
+                    {% endfor %}
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': R$ ' + context.parsed.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

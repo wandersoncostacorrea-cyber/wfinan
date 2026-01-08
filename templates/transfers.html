@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Transferências - Gerenciador Financeiro{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Transferências</h1>
+            <p class="text-gray-600">Histórico de transferências entre contas</p>
+        </div>
+        <a href="{{ url_for('add_transfer') }}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition">
+            <i class="fas fa-exchange-alt mr-2"></i>
+            Nova Transferência
+        </a>
+    </div>
+</div>
+
+{% if transfers %}
+<div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="text-left py-4 px-6 text-gray-600 font-semibold text-sm">Data</th>
+                    <th class="text-left py-4 px-6 text-gray-600 font-semibold text-sm">De</th>
+                    <th class="text-center py-4 px-6 text-gray-600 font-semibold text-sm"></th>
+                    <th class="text-left py-4 px-6 text-gray-600 font-semibold text-sm">Para</th>
+                    <th class="text-left py-4 px-6 text-gray-600 font-semibold text-sm">Descrição</th>
+                    <th class="text-right py-4 px-6 text-gray-600 font-semibold text-sm">Valor</th>
+                    <th class="text-center py-4 px-6 text-gray-600 font-semibold text-sm">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for transfer in transfers %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="py-4 px-6 text-sm">{{ transfer.date.strftime('%d/%m/%Y') }}</td>
+                    <td class="py-4 px-6 text-sm">
+                        <span class="font-medium text-gray-800">{{ transfer.from_account.name }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-center">
+                        <i class="fas fa-arrow-right text-primary"></i>
+                    </td>
+                    <td class="py-4 px-6 text-sm">
+                        <span class="font-medium text-gray-800">{{ transfer.to_account.name }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-gray-600">
+                        {{ transfer.description or '-' }}
+                    </td>
+                    <td class="py-4 px-6 text-sm text-right font-bold text-blue-600">
+                        R$ {{ "%.2f"|format(transfer.amount) }}
+                    </td>
+                    <td class="py-4 px-6 text-sm text-center">
+                        <form method="POST" action="{{ url_for('delete_transfer', id=transfer.id) }}" 
+                              class="inline" onsubmit="return confirm('Tem certeza que deseja excluir esta transferência?');">
+                            <button type="submit" class="text-red-600 hover:text-red-800" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-md p-16 text-center">
+    <i class="fas fa-exchange-alt text-gray-400 text-6xl mb-4"></i>
+    <h3 class="text-2xl font-bold text-gray-800 mb-2">Nenhuma transferência registrada</h3>
+    <p class="text-gray-600 mb-6">Transfira dinheiro entre suas contas</p>
+    <a href="{{ url_for('add_transfer') }}" class="inline-flex items-center px-6 py-3 bg-primary hover:bg-blue-700 text-white font-medium rounded-lg transition">
+        <i class="fas fa-plus-circle mr-2"></i>
+        Nova Transferência
+    </a>
+</div>
+{% endif %}
+{% endblock %}
